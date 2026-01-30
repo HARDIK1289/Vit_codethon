@@ -12,16 +12,17 @@ export async function GET(req) {
   await dbConnect();
   const userId = session.user.id;
 
-  // 1. Fetch Financial State
+  // 1. Fetch State
   const state = await FinancialState.findOne({ userId });
+  
+  // CRITICAL: If no state found, user hasn't onboarded. Return 404.
   if (!state) {
     return NextResponse.json({ error: "Setup incomplete" }, { status: 404 });
   }
 
-  // 2. Calculate "Spent So Far" this month
+  // 2. Calculate Transactions
   const now = new Date();
   const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-  
   const transactions = await Transaction.find({
     userId,
     date: { $gte: firstDay }
@@ -29,17 +30,14 @@ export async function GET(req) {
 
   const totalSpent = transactions.reduce((sum, t) => sum + t.amount, 0);
 
-  // 3. Calculate Real-Time Pacing
+  // 3. Math
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const today = now.getDate();
-  const remainingDays = daysInMonth - today + 1; // Inclusive of today
-
+  const remainingDays = daysInMonth - today + 1;
   const currentSpendable = state.initialSpendableAmount - totalSpent;
-  
-  // The Golden Number: How much can they spend TODAY?
   const dailySafeSpend = remainingDays > 0 ? (currentSpendable / remainingDays) : 0;
 
-  // 4. Fetch Goals for Progress Bars
+  // 4. Fetch Goals
   const goals = await Goal.find({ userId });
 
   return NextResponse.json({
@@ -54,7 +52,6 @@ export async function GET(req) {
       dailySafeSpend,
       daysLeft: remainingDays
     },
-    goals,
-    recentTransactions: transactions.slice(0, 5) // Show last 5
+    goals
   });
 }

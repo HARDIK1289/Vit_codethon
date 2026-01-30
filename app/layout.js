@@ -1,3 +1,4 @@
+import Navbar from "@/components/Navbar"
 import "./globals.css";
 import { Inter } from "next/font/google";
 
@@ -18,6 +19,7 @@ export default function RootLayout({ children }) {
           <div className="absolute -bottom-[10%] -right-[10%] h-[40%] w-[40%] rounded-full bg-blue-900/20 blur-[120px]" />
         </div>
         {children}
+        <Navbar/>
       </body>
     </html>
   );

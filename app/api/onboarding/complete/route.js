@@ -15,43 +15,51 @@ export async function POST(req) {
     const { income, commitments, goals } = await req.json();
     const userId = session.user.id;
 
-    // 1. Save Commitments (Bills/EMIs)
+    console.log("Saving data for User:", userId); // Debug Log
+
+    // 1. SAVE COMMITMENTS
     let totalCommitments = 0;
     if (commitments && commitments.length > 0) {
+      await Commitment.deleteMany({ userId }); // Clear old
       const commitmentDocs = commitments.map(c => {
         totalCommitments += Number(c.amount);
-        return { ...c, userId };
+        return {
+          userId, // LINK TO USER
+          name: c.name,
+          amount: Number(c.amount),
+          type: c.type
+        };
       });
-      await Commitment.deleteMany({ userId }); // Clear old drafts if any
       await Commitment.insertMany(commitmentDocs);
     }
 
-    // 2. Save Goals & Calculate Allocations
+    // 2. SAVE GOALS
     let totalGoalAllocations = 0;
     if (goals && goals.length > 0) {
+      await Goal.deleteMany({ userId }); // Clear old
       const goalDocs = goals.map(g => {
-        // Simple logic: if target is 50k in 5 months, save 10k/month
         const monthlyContribution = Math.ceil(Number(g.targetAmount) / Number(g.months));
         totalGoalAllocations += monthlyContribution;
         return {
+          userId, // LINK TO USER
           name: g.name,
-          targetAmount: g.targetAmount,
+          targetAmount: Number(g.targetAmount),
+          savedAmount: 0, // Start at 0
           deadline: new Date(new Date().setMonth(new Date().getMonth() + Number(g.months))),
-          monthlyContribution,
-          userId
+          monthlyContribution
         };
       });
-      await Goal.deleteMany({ userId });
       await Goal.insertMany(goalDocs);
     }
 
-    // 3. Initialize Central Financial State
+    // 3. CREATE/UPDATE FINANCIAL STATE
     const monthlyIncome = Number(income);
     const initialSpendableAmount = monthlyIncome - totalCommitments - totalGoalAllocations;
 
     await FinancialState.findOneAndUpdate(
       { userId },
       {
+        userId,
         monthlyIncome,
         totalCommitments,
         totalGoalAllocations,
@@ -61,13 +69,13 @@ export async function POST(req) {
       { upsert: true, new: true }
     );
 
-    // 4. Mark Onboarding as Complete
+    // 4. UPDATE USER STATUS
     await User.findByIdAndUpdate(userId, { isOnboardingComplete: true });
 
-    return NextResponse.json({ success: true, initialSpendableAmount });
+    return NextResponse.json({ success: true });
 
   } catch (error) {
-    console.error("Onboarding Error:", error);
+    console.error("Save Error:", error);
     return NextResponse.json({ error: "Failed to save data" }, { status: 500 });
   }
 }

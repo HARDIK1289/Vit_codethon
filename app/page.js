@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Zap, BarChart3, ChevronRight } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Zap, BarChart3, ChevronRight, Lock, Activity } from 'lucide-react';
 
 export default function HomePage() {
   const containerRef = useRef(null);
@@ -22,19 +22,23 @@ export default function HomePage() {
   };
 
   return (
-    <main className="relative min-h-screen bg-[#050505] overflow-x-hidden">
+    <main className="relative min-h-screen bg-[#050505] overflow-x-hidden selection:bg-purple-500/30">
+      
+      {/* Background Gradients (Added for depth) */}
+      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-purple-900/10 via-black to-black pointer-events-none" />
+      
       {/* Navbar */}
       <nav className="fixed top-0 w-full z-50 flex justify-between items-center px-8 py-6 backdrop-blur-md bg-black/20 border-b border-white/5">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg rotate-12 flex items-center justify-center">
              <Zap size={18} className="text-white fill-white" />
           </div>
-          <span className="text-xl font-bold tracking-tight">ClearSpend</span>
+          <span className="text-xl font-bold tracking-tight text-white">ClearSpend</span>
         </div>
         <div className="flex items-center gap-6">
           <Link href="/login" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Login</Link>
           <Link href="/login">
-            <button className="bg-white text-black px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 group">
+            <button className="bg-white text-black px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 group hover:bg-zinc-200 transition-colors">
               Join the Future <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </Link>
@@ -58,7 +62,7 @@ export default function HomePage() {
             Financial Intelligence. Remastered.
           </div>
           
-          <h1 className="text-6xl md:text-[5.5rem] font-bold leading-[1.1] tracking-tight mb-8">
+          <h1 className="text-6xl md:text-[5.5rem] font-bold leading-[1.1] tracking-tight mb-8 text-white">
             Your Money. <br /> 
             <span className="bg-gradient-to-r from-purple-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">On Autopilot.</span>
           </h1>
@@ -69,40 +73,78 @@ export default function HomePage() {
           </p>
         </motion.div>
 
-        {/* Live Widget Preview (The "ReactBits" feel) */}
+        {/* --- REPLACED SECTION: THE "LOCKED" INTERFACE --- */}
         <motion.div 
           initial={{ opacity: 0, y: 40, rotateX: 15 }}
           whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
           transition={{ duration: 1, delay: 0.2 }}
-          className="w-full max-w-3xl perspective-1000 mb-24"
+          className="w-full max-w-4xl perspective-1000 mb-24 relative z-10"
         >
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-            <div className="relative bg-[#0A0A0A] border border-white/10 rounded-[2.5rem] p-8 md:p-12 overflow-hidden">
-              <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-                <div className="space-y-2 text-center md:text-left">
-                  <p className="text-zinc-500 text-sm font-medium uppercase tracking-wider">Safe Spendable Today</p>
-                  <h2 className="text-6xl font-black text-emerald-400 tracking-tighter">₹1,250</h2>
-                  <p className="text-zinc-500 text-sm">Based on <span className="text-white">₹26,500</span> remaining over 21 days.</p>
+          <div className="relative group cursor-pointer" onClick={() => window.location.href = '/login'}>
+            
+            {/* 1. Animated Glow Behind */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 rounded-[2.5rem] blur-xl opacity-20 group-hover:opacity-40 transition duration-1000 animate-pulse"></div>
+            
+            {/* 2. Main Card Body */}
+            <div className="relative bg-[#0A0A0A] border border-white/10 rounded-[2.5rem] p-8 md:p-12 overflow-hidden shadow-2xl">
+              
+              {/* Scanline Effect */}
+              <motion.div 
+                initial={{ top: "-10%" }}
+                animate={{ top: "110%" }}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                className="absolute left-0 w-full h-[2px] bg-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.5)] z-20 pointer-events-none"
+              />
+
+              <div className="flex flex-col md:flex-row justify-between items-center gap-10">
+                
+                {/* Left Side: Encrypted Data */}
+                <div className="space-y-4 text-center md:text-left flex-1">
+                  <div className="flex items-center justify-center md:justify-start gap-2 text-zinc-500 text-xs font-bold uppercase tracking-[0.2em]">
+                    <Lock size={14} className="text-purple-500" /> 
+                    Secure Enclave
+                  </div>
+                  
+                  <div className="relative py-2">
+                    {/* The Blurred Number */}
+                    <h2 className="text-6xl md:text-7xl font-black text-white/10 blur-md select-none tracking-tighter scale-105">
+                      ₹1,250
+                    </h2>
+                    
+                    {/* The Overlay Badge */}
+                    <div className="absolute inset-0 flex items-center justify-center md:justify-start">
+                        <div className="px-6 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-2 group-hover:bg-white/10 transition-colors">
+                            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                            <span className="text-white text-xs font-bold uppercase tracking-widest">Login to Reveal</span>
+                        </div>
+                    </div>
+                  </div>
+                  
+                  <p className="text-zinc-600 text-sm max-w-sm mx-auto md:mx-0">
+                    Your Daily Safe Spend is dynamically calculated based on your recurring bills and income.
+                  </p>
                 </div>
-                <div className="h-32 w-48 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center relative overflow-hidden">
-                   {/* Decorative visualizer */}
-                   <div className="absolute inset-0 flex items-end justify-around p-4 gap-1">
-                      {[40, 70, 45, 90, 65].map((h, i) => (
-                        <motion.div 
-                          key={i}
-                          initial={{ height: 0 }}
-                          animate={{ height: `${h}%` }}
-                          transition={{ repeat: Infinity, duration: 2, repeatType: "reverse", delay: i * 0.2 }}
-                          className="w-full bg-gradient-to-t from-purple-500/50 to-blue-500/50 rounded-t-sm"
-                        />
-                      ))}
+
+                {/* Right Side: The "Initialize" Action */}
+                <div className="relative">
+                   <div className="w-full md:w-64 h-24 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between px-6 group-hover:border-purple-500/30 transition-colors">
+                        <div className="flex flex-col">
+                            <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-1">Status</span>
+                            <span className="text-white font-mono font-bold flex items-center gap-2">
+                                <Activity size={16} className="text-purple-500" /> Standby
+                            </span>
+                        </div>
+                        <div className="h-10 w-10 rounded-full bg-white text-black flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <ChevronRight size={20} />
+                        </div>
                    </div>
                 </div>
+
               </div>
             </div>
           </div>
         </motion.div>
+        {/* --- END REPLACED SECTION --- */}
 
         {/* Feature Cards Grid */}
         <motion.div 
@@ -125,7 +167,7 @@ export default function HomePage() {
           <SpotlightCard 
             icon={<BarChart3 size={28} className="text-blue-500" />}
             title="Behavior AI"
-            desc="Agentic analysis that understands your psychology. No just 'what', but 'why'."
+            desc="Agentic analysis that understands your psychology. Not just 'what', but 'why'."
           />
         </motion.div>
       </section>
@@ -161,7 +203,7 @@ function SpotlightCard({ icon, title, desc }) {
         <div className="mb-6 p-3 w-fit rounded-2xl bg-white/5 border border-white/10 group-hover:scale-110 transition-transform duration-500">
           {icon}
         </div>
-        <h3 className="text-2xl font-bold mb-4">{title}</h3>
+        <h3 className="text-2xl font-bold mb-4 text-white">{title}</h3>
         <p className="text-zinc-500 leading-relaxed italic">"{desc}"</p>
       </div>
     </div>
